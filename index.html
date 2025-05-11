@@ -10,7 +10,30 @@
       background-color: #fecaca; /* red-200 */
     }
     .status-seus-cards {
-      background-color: #bbf7d0; /* green-200 */
+      background-color: #bfdbfe; /* blue-200 */
+    }
+
+    .texto-suspeito {
+      color: #dc2626; /* red-600 */
+    }
+    .texto-talvez {
+      color: #facc15; /* yellow-400 */
+    }
+    .texto-seus-cards {
+      color: #2563eb; /* blue-600 */
+    }
+
+    .select-suspeito {
+      color: #dc2626; /* red-600 */
+      font-weight: bold;
+    }
+    .select-talvez {
+      color: #facc15; /* yellow-400 */
+      font-weight: bold;
+    }
+    .select-seus-cards {
+      color: #2563eb; /* blue-600 */
+      font-weight: bold;
     }
   </style>
 </head>
@@ -50,6 +73,7 @@
     function criarSelect(nome) {
       const select = document.createElement('select');
       select.className = 'border rounded px-2 py-1 text-xs';
+
       statusOptions.forEach(status => {
         const opt = document.createElement('option');
         opt.value = status;
@@ -59,11 +83,25 @@
 
       select.onchange = function () {
         const li = select.closest('li');
+        const span = li.querySelector('span');
+
+        // Remove classes anteriores
         li.classList.remove('status-suspeito', 'status-seus-cards');
+        span.classList.remove('texto-suspeito', 'texto-talvez', 'texto-seus-cards');
+        select.classList.remove('select-suspeito', 'select-talvez', 'select-seus-cards');
+
+        // Aplica conforme o valor
         if (select.value === 'Suspeito') {
           li.classList.add('status-suspeito');
+          span.classList.add('texto-suspeito');
+          select.classList.add('select-suspeito');
         } else if (select.value === 'Seus Cards') {
           li.classList.add('status-seus-cards');
+          span.classList.add('texto-seus-cards');
+          select.classList.add('select-seus-cards');
+        } else if (select.value === 'Talvez') {
+          span.classList.add('texto-talvez');
+          select.classList.add('select-talvez');
         }
       };
 
@@ -103,7 +141,10 @@
       document.querySelectorAll('select').forEach(select => {
         select.value = '---';
         const li = select.closest('li');
+        const span = li.querySelector('span');
         li.classList.remove('status-suspeito', 'status-seus-cards');
+        span.classList.remove('texto-suspeito', 'texto-talvez', 'texto-seus-cards');
+        select.classList.remove('select-suspeito', 'select-talvez', 'select-seus-cards');
       });
     }
 
