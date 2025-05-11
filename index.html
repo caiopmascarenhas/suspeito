@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suspeito - Controle de Cartas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .status-suspeito {
+      background-color: #fecaca; /* red-200 */
+    }
+    .status-seus-cards {
+      background-color: #bbf7d0; /* green-200 */
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 text-sm font-sans">
+  <div class="max-w-md mx-auto space-y-6">
+    <h1 class="text-xl font-bold text-center mb-4">🎲 Suspeito - Controle de Cartas</h1>
+
+    <button
+      onclick="limparSelecoes()"
+      class="block w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded mb-4 text-sm"
+    >
+      Limpar Seleções
+    </button>
+
+    <div id="listas"></div>
+  </div>
+
+  <script>
+    const statusOptions = ['---', 'Descartado', 'Talvez', 'Seus Cards', 'Suspeito'];
+
+    const categorias = {
+      '👤 Personagens': [
+        'Mordomo', 'Esposa', 'Cozinheiro', 'Empregada',
+        'Motorista', 'Jardineiro', 'Vizinho'
+      ],
+      '🔪 Armas': [
+        'Martelo', 'Chave', 'Veneno', 'Tesoura de poda',
+        'Faca', 'Abajur', 'Revólver'
+      ],
+      '📍 Locais': [
+        'Suíte', 'Escritório', 'Hall Central', 'Cozinha',
+        'Escada', 'Varanda', 'Sala de Jantar',
+        'Quarto', 'Biblioteca', 'Banheiro'
+      ]
+    };
+
+    function criarSelect(nome) {
+      const select = document.createElement('select');
+      select.className = 'border rounded px-2 py-1 text-xs';
+      statusOptions.forEach(status => {
+        const opt = document.createElement('option');
+        opt.value = status;
+        opt.textContent = status;
+        select.appendChild(opt);
+      });
+
+      select.onchange = function () {
+        const li = select.closest('li');
+        li.classList.remove('status-suspeito', 'status-seus-cards');
+        if (select.value === 'Suspeito') {
+          li.classList.add('status-suspeito');
+        } else if (select.value === 'Seus Cards') {
+          li.classList.add('status-seus-cards');
+        }
+      };
+
+      return select;
+    }
+
+    function criarLista(titulo, itens) {
+      const container = document.createElement('div');
+      const header = document.createElement('h2');
+      header.className = 'text-lg font-semibold mb-2';
+      header.textContent = titulo;
+
+      const ul = document.createElement('ul');
+      ul.className = 'space-y-2';
+
+      itens.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'flex justify-between items-center bg-white p-2 rounded shadow';
+
+        const span = document.createElement('span');
+        span.textContent = item;
+        span.className = 'font-medium';
+
+        const select = criarSelect(item);
+
+        li.appendChild(span);
+        li.appendChild(select);
+        ul.appendChild(li);
+      });
+
+      container.appendChild(header);
+      container.appendChild(ul);
+      return container;
+    }
+
+    function limparSelecoes() {
+      document.querySelectorAll('select').forEach(select => {
+        select.value = '---';
+        const li = select.closest('li');
+        li.classList.remove('status-suspeito', 'status-seus-cards');
+      });
+    }
+
+    // Monta as listas
+    const listasContainer = document.getElementById('listas');
+    for (const [titulo, itens] of Object.entries(categorias)) {
+      listasContainer.appendChild(criarLista(titulo, itens));
+    }
+  </script>
+</body>
+</html>
