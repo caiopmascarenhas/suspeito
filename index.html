@@ -51,108 +51,123 @@
     <div id="listas"></div>
   </div>
 
-  <script>
-    const statusOptions = ['---', 'Descartado', 'Talvez', 'Seus Cards', 'Suspeito'];
+<script>
+  const statusOptions = ['---', 'Descartado', 'Talvez', 'Seus Cards', 'Suspeito'];
+  const categorias = {
+    '👤 Personagens': ['Mordomo', 'Esposa', 'Cozinheiro', 'Empregada', 'Motorista', 'Jardineiro', 'Vizinho'],
+    '🔪 Armas': ['Martelo', 'Chave de Boca', 'Veneno', 'Tesoura de poda', 'Faca', 'Abajur', 'Revólver'],
+    '📍 Locais': ['Suíte', 'Escritório', 'Hall Central', 'Cozinha', 'Escadaria', 'Varanda', 'Sala de Jantar', 'Quarto', 'Biblioteca', 'Banheiro']
+  };
 
-    const categorias = {
-      '👤 Personagens': [
-        'Mordomo', 'Esposa', 'Cozinheiro', 'Empregada',
-        'Motorista', 'Jardineiro', 'Vizinho'
-      ],
-      '🔪 Armas': [
-        'Martelo', 'Chave de Boca', 'Veneno', 'Tesoura de poda',
-        'Faca', 'Abajur', 'Revólver'
-      ],
-      '📍 Locais': [
-        'Suíte', 'Escritório', 'Hall Central', 'Cozinha',
-        'Escadaria', 'Varanda', 'Sala de Jantar',
-        'Quarto', 'Biblioteca', 'Banheiro'
-      ]
+  const STORAGE_KEY = 'controle-cartas';
+
+  function salvarSelecoes() {
+    const selecoes = {};
+    document.querySelectorAll('select').forEach(select => {
+      const nome = select.dataset.nome;
+      selecoes[nome] = select.value;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(selecoes));
+  }
+
+  function restaurarSelecoes() {
+    const salvos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    document.querySelectorAll('select').forEach(select => {
+      const nome = select.dataset.nome;
+      if (salvos[nome]) {
+        select.value = salvos[nome];
+        select.onchange(); // força o estilo
+      }
+    });
+  }
+
+  function criarSelect(nome) {
+    const select = document.createElement('select');
+    select.className = 'border rounded px-2 py-1 text-xs';
+    select.dataset.nome = nome;
+
+    statusOptions.forEach(status => {
+      const opt = document.createElement('option');
+      opt.value = status;
+      opt.textContent = status;
+      select.appendChild(opt);
+    });
+
+    select.onchange = function () {
+      const li = select.closest('li');
+      const span = li.querySelector('span');
+
+      li.classList.remove('status-suspeito', 'status-seus-cards');
+      span.classList.remove('texto-suspeito', 'texto-talvez', 'texto-seus-cards');
+      select.classList.remove('select-suspeito', 'select-talvez', 'select-seus-cards');
+
+      if (select.value === 'Suspeito') {
+        li.classList.add('status-suspeito');
+        span.classList.add('texto-suspeito');
+        select.classList.add('select-suspeito');
+      } else if (select.value === 'Seus Cards') {
+        li.classList.add('status-seus-cards');
+        span.classList.add('texto-seus-cards');
+        select.classList.add('select-seus-cards');
+      } else if (select.value === 'Talvez') {
+        span.classList.add('texto-talvez');
+        select.classList.add('select-talvez');
+      }
+
+      salvarSelecoes(); // salva após qualquer alteração
     };
 
-    function criarSelect(nome) {
-      const select = document.createElement('select');
-      select.className = 'border rounded px-2 py-1 text-xs';
+    return select;
+  }
 
-      statusOptions.forEach(status => {
-        const opt = document.createElement('option');
-        opt.value = status;
-        opt.textContent = status;
-        select.appendChild(opt);
-      });
+  function criarLista(titulo, itens) {
+    const container = document.createElement('div');
+    const header = document.createElement('h2');
+    header.className = 'text-lg font-semibold mb-2';
+    header.textContent = titulo;
 
-      select.onchange = function () {
-        const li = select.closest('li');
-        const span = li.querySelector('span');
+    const ul = document.createElement('ul');
+    ul.className = 'space-y-2';
 
-        // Remove classes anteriores
-        li.classList.remove('status-suspeito', 'status-seus-cards');
-        span.classList.remove('texto-suspeito', 'texto-talvez', 'texto-seus-cards');
-        select.classList.remove('select-suspeito', 'select-talvez', 'select-seus-cards');
+    itens.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'flex justify-between items-center bg-white p-2 rounded shadow';
 
-        // Aplica conforme o valor
-        if (select.value === 'Suspeito') {
-          li.classList.add('status-suspeito');
-          span.classList.add('texto-suspeito');
-          select.classList.add('select-suspeito');
-        } else if (select.value === 'Seus Cards') {
-          li.classList.add('status-seus-cards');
-          span.classList.add('texto-seus-cards');
-          select.classList.add('select-seus-cards');
-        } else if (select.value === 'Talvez') {
-          span.classList.add('texto-talvez');
-          select.classList.add('select-talvez');
-        }
-      };
+      const span = document.createElement('span');
+      span.textContent = item;
+      span.className = 'font-medium';
 
-      return select;
-    }
+      const select = criarSelect(item);
 
-    function criarLista(titulo, itens) {
-      const container = document.createElement('div');
-      const header = document.createElement('h2');
-      header.className = 'text-lg font-semibold mb-2';
-      header.textContent = titulo;
+      li.appendChild(span);
+      li.appendChild(select);
+      ul.appendChild(li);
+    });
 
-      const ul = document.createElement('ul');
-      ul.className = 'space-y-2';
+    container.appendChild(header);
+    container.appendChild(ul);
+    return container;
+  }
 
-      itens.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'flex justify-between items-center bg-white p-2 rounded shadow';
+  function limparSelecoes() {
+    document.querySelectorAll('select').forEach(select => {
+      select.value = '---';
+      const li = select.closest('li');
+      const span = li.querySelector('span');
+      li.classList.remove('status-suspeito', 'status-seus-cards');
+      span.classList.remove('texto-suspeito', 'texto-talvez', 'texto-seus-cards');
+      select.classList.remove('select-suspeito', 'select-talvez', 'select-seus-cards');
+    });
+    localStorage.removeItem(STORAGE_KEY);
+  }
 
-        const span = document.createElement('span');
-        span.textContent = item;
-        span.className = 'font-medium';
+  const listasContainer = document.getElementById('listas');
+  for (const [titulo, itens] of Object.entries(categorias)) {
+    listasContainer.appendChild(criarLista(titulo, itens));
+  }
 
-        const select = criarSelect(item);
+  window.addEventListener('DOMContentLoaded', restaurarSelecoes);
+</script>
 
-        li.appendChild(span);
-        li.appendChild(select);
-        ul.appendChild(li);
-      });
-
-      container.appendChild(header);
-      container.appendChild(ul);
-      return container;
-    }
-
-    function limparSelecoes() {
-      document.querySelectorAll('select').forEach(select => {
-        select.value = '---';
-        const li = select.closest('li');
-        const span = li.querySelector('span');
-        li.classList.remove('status-suspeito', 'status-seus-cards');
-        span.classList.remove('texto-suspeito', 'texto-talvez', 'texto-seus-cards');
-        select.classList.remove('select-suspeito', 'select-talvez', 'select-seus-cards');
-      });
-    }
-
-    // Monta as listas
-    const listasContainer = document.getElementById('listas');
-    for (const [titulo, itens] of Object.entries(categorias)) {
-      listasContainer.appendChild(criarLista(titulo, itens));
-    }
-  </script>
 </body>
 </html>
